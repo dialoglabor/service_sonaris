@@ -2,268 +2,188 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8" />
-  <title>Sonaris – Leistungsübersicht</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <!-- Einfache, präsentationsfreundliche Styles -->
+  <title>Sonaris – Drei Phasen zur KI-Wirkung</title>
   <style>
-    :root {
-      --bg: #0e1116;
-      --card: #171b22;
-      --accent: #5ac8fa;   /* freundliches Blau */
-      --accent-2: #34c759; /* Signal für „Wirksamkeit“ */
-      --text: #e8ecf1;
-      --muted: #aab2bd;
-      --link: #ffd60a;     /* Akzent für Interaktion */
-      --shadow: rgba(0,0,0,0.35);
+    /* Grundfarben und Typo */
+    :root{
+      --bg:#0e1116;           /* dunkler Hintergrund für Fokus */
+      --panel:#151a21;        /* Karten-Hintergrund */
+      --panel-2:#0f141b;      /* Hover-Layer */
+      --text:#e8edf4;         /* Primärtext */
+      --muted:#a7b0bc;        /* Sekundärtext */
+      --p1:#86e5ff;           /* Akzent Phase 1 */
+      --p2:#b7ff7a;           /* Akzent Phase 2 */
+      --p3:#ffb86b;           /* Akzent Phase 3 */
+      --shadow:rgba(0,0,0,.45);
     }
-    body {
-      margin: 0;
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial;
-      background: radial-gradient(1200px 600px at 60% -10%, #1a2029, var(--bg));
-      color: var(--text);
-    }
-    .wrap {
-      max-width: 1100px;
-      margin: 48px auto 72px;
-      padding: 0 20px;
-    }
-    h1 {
-      font-size: 28px;
-      margin: 0 0 8px;
-      letter-spacing: 0.2px;
-    }
-    .subtitle {
-      color: var(--muted);
-      margin-bottom: 28px;
-    }
-    /* Container für die Hauptgrafik (SVG + Legende) */
-    .viz {
-      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.06));
-      border: 1px solid rgba(255,255,255,0.06);
-      border-radius: 16px;
-      box-shadow: 0 12px 30px var(--shadow);
-      padding: 22px;
-    }
-    .legend {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 12px;
-      margin-top: 14px;
-      color: var(--muted);
-      font-size: 14px;
-    }
-    .legend strong { color: var(--text); }
-    /* Tooltip-Stile für Hover-Popups */
-    .tooltip {
-      position: absolute;
-      background: #0b0e13;
-      border: 1px solid rgba(255,255,255,0.1);
-      padding: 8px 10px;
-      border-radius: 8px;
-      color: var(--text);
-      font-size: 13px;
-      line-height: 1.35;
-      max-width: 260px;
-      pointer-events: none;
-      opacity: 0;
-      transform: translate(-50%, -12px);
-      transition: opacity 120ms ease, transform 120ms ease;
-      box-shadow: 0 10px 24px rgba(0,0,0,0.4);
-      z-index: 10;
-    }
-    /* Interaktive Hinweise */
-    .hint {
-      font-size: 13px;
-      color: var(--muted);
-      margin-top: 10px;
-    }
-    a, .clickable { color: var(--link); cursor: pointer; }
-    /* Responsives Verhalten */
-    @media (max-width: 900px) {
-      .legend {
-        grid-template-columns: 1fr;
-      }
-      svg { width: 100% !important; }
-    }
+    html,body{margin:0;height:100%;background:radial-gradient(1100px 600px at 70% -10%, #1a2230 0%, var(--bg) 55%);}    
+    body{font-family:ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial; color:var(--text);}    
+    .wrap{max-width:1100px;margin:48px auto;padding:0 20px;}
+    h1{margin:0 0 8px;font-size:28px;letter-spacing:0.2px}
+    .sub{margin:0 0 24px;color:var(--muted)}
+
+    /* Grid für drei Phasen */
+    .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+
+    /* Interaktive Karten (Teaser -> expandiert bei Hover/Focus/Click) */
+    .card{position:relative;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.06));
+      border:1px solid rgba(255,255,255,0.06);border-radius:16px;box-shadow:0 8px 26px var(--shadow);
+      overflow:hidden;min-height:180px;transition:transform .28s ease, box-shadow .28s ease}
+    .card:focus-within,.card:hover{transform:translateY(-2px);box-shadow:0 14px 34px rgba(0,0,0,.55)}
+
+    /* Header-Zeile mit Phase und Icon */
+    .hdr{display:flex;align-items:center;gap:10px;padding:16px 16px 6px}
+    .pill{font-size:12px;padding:6px 10px;border-radius:999px;background:rgba(255,255,255,.06);color:var(--muted);border:1px solid rgba(255,255,255,.07)}
+    .title{padding:0 16px 10px;font-size:18px;font-weight:800}
+    .teaser{padding:0 16px 18px;color:var(--muted)}
+
+    /* Details sind standardmäßig "zu" (Teaser-Ansicht) */
+    .details{background:var(--panel-2);border-top:1px solid rgba(255,255,255,0.06);
+      padding:0 16px;max-height:0;opacity:0;transition:max-height .4s ease, opacity .35s ease;padding-bottom:0}
+
+    /* Hover/Fokus/Click -> ausklappen */
+    .card:hover .details, .card:focus-within .details, .card.active .details{max-height:340px;opacity:1;padding-bottom:14px}
+
+    /* Karten-spezifische Akzentleisten oben */
+    .acc{position:absolute;inset:0 0 auto 0;height:3px;opacity:.9}
+    .p1{background:linear-gradient(90deg, var(--p1), transparent)}
+    .p2{background:linear-gradient(90deg, var(--p2), transparent)}
+    .p3{background:linear-gradient(90deg, var(--p3), transparent)}
+
+    /* Minimalistische, ungewöhnliche Icons (inline SVG) */
+    .icon{width:28px;height:28px;display:inline-block}
+    .icon svg{width:100%;height:100%}
+
+    /* Responsiv */
+    @media (max-width: 980px){.grid{grid-template-columns:1fr}} 
   </style>
 </head>
 <body>
   <div class="wrap">
-    <h1>Sonaris – Von Verständnis zu Wirkung</h1>
-    <div class="subtitle">Training & Einführung in KI • Technisches Tool: Langdock • Prozessberatung</div>
+    <h1>Sonaris – Drei Phasen zur KI‑Wirkung</h1>
+    <p class="sub">Klar strukturiert, messbar und skalierbar – von Qualifizierung über Infrastruktur bis zu Quick‑Win‑Automatisierungen.</p>
 
-    <div class="viz">
-      <!--
-        Hauptvisualisierung (SVG)
-        - Drei Phasen-Kacheln (Training, Langdock, Prozessberatung)
-        - Pfeile mit Tooltips zeigen Übergaben/Workflow
-        - Loop-Pfeil symbolisiert den iterativen Verbesserungszyklus
-      -->
-      <div id="tooltip" class="tooltip" role="status" aria-live="polite"></div>
+    <section class="grid" aria-label="Drei Phasen">
+      <!-- Phase 1: Qualifizierung und Mindset-Entwicklung -->
+      <article class="card" tabindex="0" aria-label="Phase 1 Qualifizierung und Mindset-Entwicklung">
+        <!-- Akzentleiste -->
+        <div class="acc p1" aria-hidden="true"></div>
+        <header class="hdr">
+          <!-- Ungewöhnliches Icon: Polarstern (mehrarmige Leitfigur) -->
+          <span class="icon" aria-hidden="true">
+            <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="32" cy="32" r="10" stroke="var(--p1)" stroke-width="2" opacity="0.9"/>
+              <path d="M32 6 L32 22 M32 42 L32 58 M6 32 L22 32 M42 32 L58 32 M15 15 L26 26 M38 38 L49 49 M15 49 L26 38 M38 26 L49 15" stroke="var(--p1)" stroke-width="2" stroke-linecap="round" opacity="0.8"/>
+            </svg>
+          </span>
+          <span class="pill">Phase 1</span>
+        </header>
+        <h2 class="title">Qualifizierung und Mindset‑Entwicklung</h2>
+        <p class="teaser">Gemeinsames KI‑Verständnis aufbauen – von Führung bis Mitarbeitende. Fokus auf konkrete Anwendungsmöglichkeiten.</p>
+        
+        <!-- Ausklappbarer Bereich -->
+        <div class="details">
+          <!-- Kommentar: Inhalte bewusst kurz, damit die Karte kompakt bleibt -->
+          <ul>
+            <li>LLM‑Grundlagen, praxistaugliches Prompting & Orchestrierung</li>
+            <li>Use‑Case‑Discovery mit Blick auf Alltagstätigkeiten</li>
+            <li>Ergebnis: Geteilte Sprache & priorisierter Use‑Case‑Backlog</li>
+          </ul>
+        </div>
+      </article>
 
-      <svg id="sonaris-svg" viewBox="0 0 1100 420" width="1100" height="420" aria-label="Sonaris Workflow">
-        <!-- Defs: Filter, Marker für Pfeilspitzen, weiches Glühen -->
-        <defs>
-          <filter id="soft" x="-50%" y="-50%" width="200%" height="200%">
-            <feGaussianBlur in="SourceGraphic" stdDeviation="4" result="blur" />
-            <feMerge>
-              <feMergeNode in="blur" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
-          </filter>
-          <linearGradient id="gradLine" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stop-color="#5ac8fa"/>
-            <stop offset="100%" stop-color="#34c759"/>
-          </linearGradient>
-          <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
-            <path d="M0,0 L12,6 L0,12 Z" fill="url(#gradLine)"></path>
-          </marker>
-        </defs>
+      <!-- Phase 2: Zentrale technische Infrastruktur und Compliance (ohne Begriff "Langdock") -->
+      <article class="card" tabindex="0" aria-label="Phase 2 Zentrale technische Infrastruktur und Compliance">
+        <div class="acc p2" aria-hidden="true"></div>
+        <header class="hdr">
+          <!-- Ungewöhnliches Icon: Hexagonales Gitter als Symbol für zentrale, regelbasierte Struktur -->
+          <span class="icon" aria-hidden="true">
+            <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" fill="none">
+              <path d="M22 10 L42 10 L54 22 L54 42 L42 54 L22 54 L10 42 L10 22 Z" stroke="var(--p2)" stroke-width="2" opacity="0.95"/>
+              <circle cx="22" cy="22" r="4" fill="none" stroke="var(--p2)"/>
+              <circle cx="42" cy="22" r="4" fill="none" stroke="var(--p2)"/>
+              <circle cx="32" cy="32" r="4" fill="none" stroke="var(--p2)"/>
+              <circle cx="22" cy="42" r="4" fill="none" stroke="var(--p2)"/>
+              <circle cx="42" cy="42" r="4" fill="none" stroke="var(--p2)"/>
+              <path d="M26 22 L28 22 M36 22 L38 22 M22 26 L22 28 M42 26 L42 28 M26 42 L28 42 M36 42 L38 42 M32 28 L32 30" stroke="var(--p2)" stroke-width="2" opacity="0.8"/>
+            </svg>
+          </span>
+          <span class="pill">Phase 2</span>
+        </header>
+        <h2 class="title">Zentrale technische Infrastruktur & Compliance</h2>
+        <p class="teaser">Zentrale, DSGVO‑konforme KI‑Infrastruktur – sicher, steuerbar und kosteneffizient.</p>
 
-        <!-- Phase 1: Training & Einführung -->
-        <g class="clickable" data-title="Training & Einführung in KI"
-           data-text="Mindset-Shift, LLM-Verständnis, Use-Case-Backlog, gemeinsame Sprache für KI."
-           tabindex="0">
-          <!-- Kachel -->
-          <rect x="40" y="80" rx="16" ry="16" width="300" height="220"
-                fill="#171b22" stroke="rgba(255,255,255,0.08)" stroke-width="1" />
-          <!-- Header-Badge -->
-          <rect x="40" y="60" rx="8" ry="8" width="160" height="28" fill="rgba(90,200,250,0.18)" />
-          <text x="48" y="80" fill="#5ac8fa" font-size="13" font-weight="600">Phase 1</text>
-          <text x="64" y="140" fill="#e8ecf1" font-size="20" font-weight="700">Training & Einführung</text>
-          <foreignObject x="64" y="160" width="250" height="120">
-            <div xmlns="http://www.w3.org/1999/xhtml" style="color:#aab2bd;font-size:14px;line-height:1.35;">
-              Ermöglicht den Change-Prozess und fördert ein tiefes Verständnis von Large Language Models.
-              Ergebnis: geteiltes Verständnis und priorisierte Use-Cases.
-            </div>
-          </foreignObject>
-        </g>
+        <div class="details">
+          <ul>
+            <li>Assistenten & Workflows bauen, teilen und betreiben</li>
+            <li>Rollen-/Rechtemanagement, Governance & Audit Trails</li>
+            <li>Von Prototyp zu produktiv – nachvollziehbar und skalierbar</li>
+          </ul>
+        </div>
+      </article>
 
-        <!-- Pfeil: Training -> Langdock -->
-        <g class="hoverline"
-           data-title="Übergabe: Use-Case-Backlog"
-           data-text="Priorisierte Ideen werden in Langdock als Assistenten/Workflows prototypisiert und getestet.">
-          <path d="M360,190 C420,190 460,190 520,190" stroke="url(#gradLine)" stroke-width="3"
-                marker-end="url(#arrow)" filter="url(#soft)"></path>
-        </g>
+      <!-- Phase 3: Use-Case-Identifikation & Prozessoptimierung (Quick Wins) -->
+      <article class="card" tabindex="0" aria-label="Phase 3 Use-Case-Identifikation und Prozessoptimierung">
+        <div class="acc p3" aria-hidden="true"></div>
+        <header class="hdr">
+          <!-- Ungewöhnliches Icon: Treppen-Pfeil (verdichteter Fortschritt/Quick Wins) -->
+          <span class="icon" aria-hidden="true">
+            <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" fill="none">
+              <path d="M12 52 L28 36 L28 44 L36 36 L36 28 L44 20 L52 12" stroke="var(--p3)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M52 12 L50 22 L40 20" stroke="var(--p3)" stroke-width="3" stroke-linecap="round"/>
+            </svg>
+          </span>
+          <span class="pill">Phase 3</span>
+        </header>
+        <h2 class="title">Use‑Case‑Identifikation & Prozessoptimierung (Quick Wins)</h2>
+        <p class="teaser">Schnelle, messbare Wirkung: 1–2 Prototypen als belastbarer Proof‑of‑Concept.</p>
 
-        <!-- Phase 2: Langdock -->
-        <g class="clickable" data-title="Technisches Tool: Langdock"
-           data-text="Zentrale Plattform, um KI nutzbar zu machen: Assistenten, Workflows, Governance, Compliance."
-           tabindex="0">
-          <rect x="540" y="80" rx="16" ry="16" width="300" height="220"
-                fill="#171b22" stroke="rgba(255,255,255,0.08)" stroke-width="1" />
-          <rect x="540" y="60" rx="8" ry="8" width="160" height="28" fill="rgba(90,200,250,0.18)" />
-          <text x="548" y="80" fill="#5ac8fa" font-size="13" font-weight="600">Phase 2</text>
-          <text x="564" y="140" fill="#e8ecf1" font-size="20" font-weight="700">Technisches Tool: Langdock</text>
-          <foreignObject x="564" y="160" width="250" height="120">
-            <div xmlns="http://www.w3.org/1999/xhtml" style="color:#aab2bd;font-size:14px;line-height:1.35;">
-              Stellt produktionsreife KI bereit: von Prototypen zu sicheren Rollouts. Kollaboration und
-              Rollen-/Rechtemanagement inklusive.
-            </div>
-          </foreignObject>
-        </g>
-
-        <!-- Pfeil: Langdock -> Prozessberatung -->
-        <g class="hoverline"
-           data-title="Übergabe: Pilot-KPIs"
-           data-text="Konkrete Ergebnisse und Metriken fließen in die Prozessberatung für Feinkonzeption und Skalierung.">
-          <path d="M840,190 C900,190 940,220 980,260" stroke="url(#gradLine)" stroke-width="3"
-                marker-end="url(#arrow)" filter="url(#soft)"></path>
-        </g>
-
-        <!-- Phase 3: Prozessberatung -->
-        <g class="clickable" data-title="Prozessberatung"
-           data-text="Identifikation repetitiver Prozesse, Entwicklung von Assistenten & Automatisierungslösungen mit messbarem ROI."
-           tabindex="0">
-          <rect x="760" y="260" rx="16" ry="16" width="300" height="120"
-                fill="#171b22" stroke="rgba(255,255,255,0.08)" stroke-width="1" />
-          <rect x="760" y="240" rx="8" ry="8" width="140" height="28" fill="rgba(90,200,250,0.18)" />
-          <text x="768" y="260" fill="#5ac8fa" font-size="13" font-weight="600">Phase 3</text>
-          <text x="784" y="300" fill="#e8ecf1" font-size="20" font-weight="700">Prozessberatung</text>
-          <foreignObject x="784" y="320" width="260" height="60">
-            <div xmlns="http://www.w3.org/1999/xhtml" style="color:#aab2bd;font-size:14px;line-height:1.35;">
-              Von der Analyse bis zur Skalierung: schneller Pilot, klare KPIs, nachhaltiger Rollout.
-            </div>
-          </foreignObject>
-        </g>
-
-        <!-- Loop-Pfeil: Rückkopplung Prozessberatung -> Training -->
-        <g class="hoverline"
-           data-title="Feedback-Loop"
-           data-text="Lernerfahrungen und neue Use-Cases fließen zurück ins Training. Kontinuierliche Verbesserung.">
-          <path d="M760,320 C600,360 380,350 160,280" stroke="url(#gradLine)" stroke-width="3"
-                marker-end="url(#arrow)" filter="url(#soft)"></path>
-        </g>
-
-        <!-- Wirkungs-Badge -->
-        <g>
-          <rect x="40" y="22" rx="10" ry="10" width="210" height="28" fill="rgba(52,199,89,0.18)"/>
-          <text x="50" y="42" fill="#34c759" font-size="13" font-weight="700">Wirkung: schneller, sicher, skalierbar</text>
-        </g>
-      </svg>
-
-      <div class="legend" aria-label="Legende">
-        <div><strong>Phasen (Kacheln):</strong> Training, Langdock, Prozessberatung</div>
-        <div><strong>Pfeile:</strong> Übergaben (Use-Case-Backlog, Pilot-KPIs) und Feedback-Loop</div>
-        <div><strong>Interaktion:</strong> Klick/Focus für Details, Hover für Übergabe-Infos</div>
-      </div>
-      <div class="hint">Tipp: In Präsentation mit Bildschirmfreigabe nutzen. Kacheln sind klickbar, Pfeile zeigen bei Hover zusätzliche Informationen.</div>
-    </div>
+        <div class="details">
+          <ul>
+            <li>Ziel: Niedrigschwellige KI‑Anwendungsfälle identifizieren und Prozesse optimieren</li>
+            <li>Umsetzung: 1–2 Automatisierungs‑Prototypen (Workflows/Skripte) inkl. Konzeption, Implementierung, Testing und Integration</li>
+            <li>Aufwand: ca. 10–15 Std. dedizierte Entwicklungs‑ & Beratungszeit (PoC); bei erweitertem Umfang 20–30 Std.</li>
+          </ul>
+          <p style="margin:10px 0 4px;color:var(--muted)"><strong style="color:var(--text)">7‑Schritte Use‑Case Framework</strong> (3 Sessions à 1,5–2 Std.)</p>
+          <ol>
+            <li>Aufgaben identifizieren – Business‑Herausforderungen erfassen</li>
+            <li>Aufgaben zerlegen – Input → Schritte → Output</li>
+            <li>GenAI‑Fähigkeiten zuordnen – Analysieren vs. Generieren</li>
+            <li>KI‑Aufgaben formulieren – konkrete, niedrigschwellige Automatisierung</li>
+            <li>AI‑First Prozess denken – Optimierung statt Status‑quo‑Digitalisierung</li>
+            <li>Erste Automatisierungen – Entwicklung & Tests (fokussierte Implementierung/Integration)</li>
+            <li>Iteration & Rollout (optional) – Feinabstimmung, Skalierungsempfehlung, Pilot‑Deployment</li>
+          </ol>
+        </div>
+      </article>
+    </section>
   </div>
 
-  <!-- Minimaler JS-Block für Tooltips & Klick-Infos -->
   <script>
+    /*
+      Interaktionslogik:
+      - Zielvorgabe war Mouse-Over; zusätzlich Click/Enter als Fallback (Touch/Keyboard).
+      - Bei Click toggeln wir die Klasse .active, sodass Details geöffnet bleiben.
+    */
     (function(){
-      const svg = document.getElementById('sonaris-svg');
-      const tooltip = document.getElementById('tooltip');
-
-      // Hilfsfunktion: Tooltip positionieren und anzeigen
-      function showTooltip(evt, title, text) {
-        const bbox = svg.getBoundingClientRect();
-        const x = (evt.clientX || (evt.touches && evt.touches[0].clientX)) || (bbox.left + bbox.width/2);
-        const y = (evt.clientY || (evt.touches && evt.touches[0].clientY)) || (bbox.top + bbox.height/2);
-        tooltip.innerHTML = '<strong style="color:#5ac8fa;">' + title + '</strong><div style="margin-top:4px;color:#aab2bd;">' + text + '</div>';
-        tooltip.style.left = x + 'px';
-        tooltip.style.top = (y - 16) + 'px';
-        tooltip.style.opacity = 1;
-        tooltip.style.transform = 'translate(-50%, -6px)';
-      }
-      function hideTooltip() {
-        tooltip.style.opacity = 0;
-        tooltip.style.transform = 'translate(-50%, -12px)';
-      }
-
-      // Interaktive Gruppen: Kacheln (clickable) und Pfeile (hoverline)
-      svg.querySelectorAll('.clickable').forEach(g => {
-        g.addEventListener('mouseenter', e => {
-          showTooltip(e, g.dataset.title, g.dataset.text);
+      const cards = document.querySelectorAll('.card');
+      cards.forEach(card => {
+        // Toggle per Click
+        card.addEventListener('click', (e) => {
+          // Verhindert, dass Link/Buttons inside stören – hier keine vorhanden, nur Sicherheitsnetz
+          if(e.target.closest('a,button')) return;
+          card.classList.toggle('active');
         });
-        g.addEventListener('mouseleave', hideTooltip);
-        g.addEventListener('focus', e => {
-          showTooltip(e, g.dataset.title, g.dataset.text);
+        // Toggle per Enter/Space (Accessibility)
+        card.addEventListener('keydown', (e) => {
+          if(e.key === 'Enter' || e.key === ' '){
+            e.preventDefault();
+            card.classList.toggle('active');
+          }
         });
-        g.addEventListener('blur', hideTooltip);
-        g.addEventListener('click', e => {
-          // Für Live-Demos: simple Highlight-Animation bei Klick
-          const rect = g.querySelector('rect');
-          if (!rect) return;
-          rect.animate([
-            { stroke: 'rgba(255,255,255,0.08)', strokeWidth: 1 },
-            { stroke: 'var(--accent)', strokeWidth: 3 },
-            { stroke: 'rgba(255,255,255,0.08)', strokeWidth: 1 }
-          ], { duration: 900, easing: 'ease-out' });
-          showTooltip(e, g.dataset.title, g.dataset.text);
-        });
-      });
-
-      svg.querySelectorAll('.hoverline').forEach(g => {
-        g.addEventListener('mouseenter', e => {
-          showTooltip(e, g.dataset.title, g.dataset.text);
-        });
-        g.addEventListener('mouseleave', hideTooltip);
       });
     })();
   </script>
 </body>
-</html>
+</html
