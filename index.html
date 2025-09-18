@@ -3,187 +3,189 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Sonaris – Drei Phasen zur KI-Wirkung</title>
+  <title>Sonaris – Drei Phasen (vertikal, Slide-out)</title>
   <style>
-    /* Grundfarben und Typo */
     :root{
-      --bg:#0e1116;           /* dunkler Hintergrund für Fokus */
-      --panel:#151a21;        /* Karten-Hintergrund */
-      --panel-2:#0f141b;      /* Hover-Layer */
-      --text:#e8edf4;         /* Primärtext */
-      --muted:#a7b0bc;        /* Sekundärtext */
-      --p1:#86e5ff;           /* Akzent Phase 1 */
-      --p2:#b7ff7a;           /* Akzent Phase 2 */
-      --p3:#ffb86b;           /* Akzent Phase 3 */
-      --shadow:rgba(0,0,0,.45);
+      --bg:#0e1116; --card:#171c26; --ink:#e8ecf1; --muted:#aab2bd;
+      --pri:#5ac8fa; --sec:#34c759; --shade:rgba(0,0,0,.35);
+      --panelW:min(64vw, 780px); /* Standard-Weite des Slide-outs */
     }
-    html,body{margin:0;height:100%;background:radial-gradient(1100px 600px at 70% -10%, #1a2230 0%, var(--bg) 55%);}    
-    body{font-family:ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial; color:var(--text);}    
-    .wrap{max-width:1100px;margin:48px auto;padding:0 20px;}
-    h1{margin:0 0 8px;font-size:28px;letter-spacing:0.2px}
-    .sub{margin:0 0 24px;color:var(--muted)}
+    html,body{height:100%}
+    body{margin:0;background:radial-gradient(1200px 600px at 60% -10%,#1a2029,var(--bg));
+      color:var(--ink);font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial}
+    .wrap{max-width:1200px;margin:38px auto;padding:0 18px}
+    h1{margin:0 0 6px;font-size:28px}
+    .subtitle{color:var(--muted);margin-bottom:20px}
 
-    /* Grid für drei Phasen */
-    .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+    /* Vertikale Liste der Phasen */
+    .stack{display:flex;flex-direction:column;gap:18px;position:relative}
 
-    /* Interaktive Karten (Teaser -> expandiert bei Hover/Focus/Click) */
-    .card{position:relative;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.06));
-      border:1px solid rgba(255,255,255,0.06);border-radius:16px;box-shadow:0 8px 26px var(--shadow);
-      overflow:hidden;min-height:180px;transition:transform .28s ease, box-shadow .28s ease}
-    .card:focus-within,.card:hover{transform:translateY(-2px);box-shadow:0 14px 34px rgba(0,0,0,.55)}
+    /* Jede Zeile: Stub links, Slide-out Panel nach rechts */
+    .row{position:relative;isolation:isolate; /* damit Panel überlappt */
+         --stubW: 380px; /* Breite der linken Box */
+         --panelMinH: 220px; /* Mindesthöhe, individuell überschreibbar */
+         min-height: 170px; /* Grundhöhe geschlossen */}
 
-    /* Header-Zeile mit Phase und Icon */
-    .hdr{display:flex;align-items:center;gap:10px;padding:16px 16px 6px}
-    .pill{font-size:12px;padding:6px 10px;border-radius:999px;background:rgba(255,255,255,.06);color:var(--muted);border:1px solid rgba(255,255,255,.07)}
-    .title{padding:0 16px 10px;font-size:18px;font-weight:800}
-    .teaser{padding:0 16px 18px;color:var(--muted)}
+    .stub{position:relative;width:var(--stubW);background:linear-gradient(180deg,rgba(255,255,255,.02),rgba(0,0,0,.08));
+      border:1px solid rgba(255,255,255,.06);box-shadow:0 12px 28px var(--shade);
+      border-radius:16px;overflow:hidden;backdrop-filter: saturate(120%) blur(2px)}
 
-    /* Details sind standardmäßig "zu" (Teaser-Ansicht) */
-    .details{background:var(--panel-2);border-top:1px solid rgba(255,255,255,0.06);
-      padding:0 16px;max-height:0;opacity:0;transition:max-height .4s ease, opacity .35s ease;padding-bottom:0}
+    .head{display:flex;align-items:center;gap:10px;padding:14px 14px 6px}
+    .tag{font-size:12px;color:var(--pri);background:rgba(90,200,250,.15);padding:4px 8px;border-radius:8px}
+    .title{font-size:18px;font-weight:800;margin:2px 14px 8px}
+    .teaser{color:var(--muted);font-size:14px;line-height:1.45;margin:0 14px 16px 14px}
 
-    /* Hover/Fokus/Click -> ausklappen */
-    .card:hover .details, .card:focus-within .details, .card.active .details{max-height:340px;opacity:1;padding-bottom:14px}
+    /* Ungewöhnliche, minimalistische Icons (reine Linien, Polygonformen) */
+    .ico{width:28px;height:28px}
+    .ico svg{width:28px;height:28px}
+    .ico path,.ico polyline,.ico line,.ico circle{stroke:url(#g1);stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
 
-    /* Karten-spezifische Akzentleisten oben */
-    .acc{position:absolute;inset:0 0 auto 0;height:3px;opacity:.9}
-    .p1{background:linear-gradient(90deg, var(--p1), transparent)}
-    .p2{background:linear-gradient(90deg, var(--p2), transparent)}
-    .p3{background:linear-gradient(90deg, var(--p3), transparent)}
+    /* Slide-out Panel rechts */
+    .panel{position:absolute;left:calc(var(--stubW) + 16px);top:0;z-index:2;
+      width:0;overflow:hidden;border-radius:16px;border:1px solid rgba(255,255,255,.06);
+      background:linear-gradient(180deg,rgba(255,255,255,.02),rgba(0,0,0,.08));
+      box-shadow:0 14px 34px var(--shade);transition:width .3s ease, min-height .3s ease;
+      pointer-events:none}
 
-    /* Minimalistische, ungewöhnliche Icons (inline SVG) */
-    .icon{width:28px;height:28px;display:inline-block}
-    .icon svg{width:100%;height:100%}
+    .panel-inner{padding:14px 16px 16px 16px}
+    .chips{display:flex;flex-wrap:wrap;gap:10px;margin:4px 0 10px}
+    .chip{font-size:12px;color:var(--ink);background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);border-radius:999px;padding:6px 10px}
+    .bul{color:var(--muted);font-size:14px;line-height:1.45;margin:8px 0 0 0}
+    .bul strong{color:var(--ink)}
 
-    /* Responsiv */
-    @media (max-width: 980px){.grid{grid-template-columns:1fr}} 
+    /* Hover/Focus-Interaktion: Panel fährt nach rechts aus, Stub-Teaser verblasst */
+    .row.open .panel,
+    .row:hover .panel{width:var(--panelW);min-height:var(--panelMinH);pointer-events:auto}
+
+    .row.open .teaser,
+    .row:hover .teaser{opacity:.08;transition:opacity .2s ease}
+
+    /* Tastatur-Fokus sichtbar machen */
+    .stub:focus{outline:2px solid var(--pri);outline-offset:2px}
+
+    /* Responsives Fallback: unter 900px Panel unter die Stub-Box klappen */
+    @media (max-width: 900px){
+      .row{--stubW: 100%;}
+      .panel{position:relative;left:0;margin-top:10px;width:100%}
+      .row.open .panel, .row:hover .panel{width:100%}
+    }
   </style>
 </head>
 <body>
   <div class="wrap">
-    <h1>Sonaris – Drei Phasen zur KI‑Wirkung</h1>
-    <p class="sub">Klar strukturiert, messbar und skalierbar – von Qualifizierung über Infrastruktur bis zu Quick‑Win‑Automatisierungen.</p>
+    <h1>Sonaris – Von Verständnis zu Wirkung</h1>
+    <div class="subtitle">Drei Phasen der KI-Einführung mit Quick-Win-Fokus</div>
 
-    <section class="grid" aria-label="Drei Phasen">
-      <!-- Phase 1: Qualifizierung und Mindset-Entwicklung -->
-      <article class="card" tabindex="0" aria-label="Phase 1 Qualifizierung und Mindset-Entwicklung">
-        <!-- Akzentleiste -->
-        <div class="acc p1" aria-hidden="true"></div>
-        <header class="hdr">
-          <!-- Ungewöhnliches Icon: Polarstern (mehrarmige Leitfigur) -->
-          <span class="icon" aria-hidden="true">
-            <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="32" cy="32" r="10" stroke="var(--p1)" stroke-width="2" opacity="0.9"/>
-              <path d="M32 6 L32 22 M32 42 L32 58 M6 32 L22 32 M42 32 L58 32 M15 15 L26 26 M38 38 L49 49 M15 49 L26 38 M38 26 L49 15" stroke="var(--p1)" stroke-width="2" stroke-linecap="round" opacity="0.8"/>
-            </svg>
-          </span>
-          <span class="pill">Phase 1</span>
-        </header>
-        <h2 class="title">Qualifizierung und Mindset‑Entwicklung</h2>
-        <p class="teaser">Gemeinsames KI‑Verständnis aufbauen – von Führung bis Mitarbeitende. Fokus auf konkrete Anwendungsmöglichkeiten.</p>
-        
-        <!-- Ausklappbarer Bereich -->
-        <div class="details">
-          <!-- Kommentar: Inhalte bewusst kurz, damit die Karte kompakt bleibt -->
-          <ul>
-            <li>LLM‑Grundlagen, praxistaugliches Prompting & Orchestrierung</li>
-            <li>Use‑Case‑Discovery mit Blick auf Alltagstätigkeiten</li>
-            <li>Ergebnis: Geteilte Sprache & priorisierter Use‑Case‑Backlog</li>
-          </ul>
+    <!-- Gradient-Def für Icon-Linien -->
+    <svg width="0" height="0" aria-hidden="true"><defs>
+      <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#5ac8fa"/><stop offset="100%" stop-color="#34c759"/>
+      </linearGradient>
+    </defs></svg>
+
+    <section class="stack" aria-label="Drei Phasen vertikal">
+      <!-- PHASE 1 -->
+      <div class="row" style="--panelMinH: 230px;">
+        <div class="stub" tabindex="0" aria-label="Phase 1 aufklappen">
+          <div class="head">
+            <div class="ico" aria-hidden="true">
+              <!-- Tangram-Kopf: Denkmuster/Qualifizierung -->
+              <svg viewBox="0 0 24 24"><path d="M4 12 L10 4 L14 8 L20 4 L20 14 L14 20 L8 20 Z"/></svg>
+            </div>
+            <span class="tag">Phase 1</span>
+          </div>
+          <div class="title">Qualifizierung und Mindsetentwicklung</div>
+          <p class="teaser">Gemeinsames Verständnis, konkrete Anwendungsideen, priorisierter Use‑Case‑Backlog.</p>
         </div>
-      </article>
-
-      <!-- Phase 2: Zentrale technische Infrastruktur und Compliance (ohne Begriff "Langdock") -->
-      <article class="card" tabindex="0" aria-label="Phase 2 Zentrale technische Infrastruktur und Compliance">
-        <div class="acc p2" aria-hidden="true"></div>
-        <header class="hdr">
-          <!-- Ungewöhnliches Icon: Hexagonales Gitter als Symbol für zentrale, regelbasierte Struktur -->
-          <span class="icon" aria-hidden="true">
-            <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" fill="none">
-              <path d="M22 10 L42 10 L54 22 L54 42 L42 54 L22 54 L10 42 L10 22 Z" stroke="var(--p2)" stroke-width="2" opacity="0.95"/>
-              <circle cx="22" cy="22" r="4" fill="none" stroke="var(--p2)"/>
-              <circle cx="42" cy="22" r="4" fill="none" stroke="var(--p2)"/>
-              <circle cx="32" cy="32" r="4" fill="none" stroke="var(--p2)"/>
-              <circle cx="22" cy="42" r="4" fill="none" stroke="var(--p2)"/>
-              <circle cx="42" cy="42" r="4" fill="none" stroke="var(--p2)"/>
-              <path d="M26 22 L28 22 M36 22 L38 22 M22 26 L22 28 M42 26 L42 28 M26 42 L28 42 M36 42 L38 42 M32 28 L32 30" stroke="var(--p2)" stroke-width="2" opacity="0.8"/>
-            </svg>
-          </span>
-          <span class="pill">Phase 2</span>
-        </header>
-        <h2 class="title">Zentrale technische Infrastruktur & Compliance</h2>
-        <p class="teaser">Zentrale, DSGVO‑konforme KI‑Infrastruktur – sicher, steuerbar und kosteneffizient.</p>
-
-        <div class="details">
-          <ul>
-            <li>Assistenten & Workflows bauen, teilen und betreiben</li>
-            <li>Rollen-/Rechtemanagement, Governance & Audit Trails</li>
-            <li>Von Prototyp zu produktiv – nachvollziehbar und skalierbar</li>
-          </ul>
+        <div class="panel" role="region" aria-label="Details Phase 1">
+          <div class="panel-inner">
+            <div class="chips">
+              <span class="chip">LLM‑Grundlagen</span>
+              <span class="chip">Prompting & Orchestrierung</span>
+              <span class="chip">Use‑Case‑Discovery</span>
+            </div>
+            <p class="bul">Enablement für Führung & Teams; Chancen und Grenzen klar benennen.</p>
+            <p class="bul"><strong>Ergebnis:</strong> Geteilte Sprache und priorisierte Use‑Cases.</p>
+          </div>
         </div>
-      </article>
+      </div>
 
-      <!-- Phase 3: Use-Case-Identifikation & Prozessoptimierung (Quick Wins) -->
-      <article class="card" tabindex="0" aria-label="Phase 3 Use-Case-Identifikation und Prozessoptimierung">
-        <div class="acc p3" aria-hidden="true"></div>
-        <header class="hdr">
-          <!-- Ungewöhnliches Icon: Treppen-Pfeil (verdichteter Fortschritt/Quick Wins) -->
-          <span class="icon" aria-hidden="true">
-            <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" fill="none">
-              <path d="M12 52 L28 36 L28 44 L36 36 L36 28 L44 20 L52 12" stroke="var(--p3)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M52 12 L50 22 L40 20" stroke="var(--p3)" stroke-width="3" stroke-linecap="round"/>
-            </svg>
-          </span>
-          <span class="pill">Phase 3</span>
-        </header>
-        <h2 class="title">Use‑Case‑Identifikation & Prozessoptimierung (Quick Wins)</h2>
-        <p class="teaser">Schnelle, messbare Wirkung: 1–2 Prototypen als belastbarer Proof‑of‑Concept.</p>
-
-        <div class="details">
-          <ul>
-            <li>Ziel: Niedrigschwellige KI‑Anwendungsfälle identifizieren und Prozesse optimieren</li>
-            <li>Umsetzung: 1–2 Automatisierungs‑Prototypen (Workflows/Skripte) inkl. Konzeption, Implementierung, Testing und Integration</li>
-            <li>Aufwand: ca. 10–15 Std. dedizierte Entwicklungs‑ & Beratungszeit (PoC); bei erweitertem Umfang 20–30 Std.</li>
-          </ul>
-          <p style="margin:10px 0 4px;color:var(--muted)"><strong style="color:var(--text)">7‑Schritte Use‑Case Framework</strong> (3 Sessions à 1,5–2 Std.)</p>
-          <ol>
-            <li>Aufgaben identifizieren – Business‑Herausforderungen erfassen</li>
-            <li>Aufgaben zerlegen – Input → Schritte → Output</li>
-            <li>GenAI‑Fähigkeiten zuordnen – Analysieren vs. Generieren</li>
-            <li>KI‑Aufgaben formulieren – konkrete, niedrigschwellige Automatisierung</li>
-            <li>AI‑First Prozess denken – Optimierung statt Status‑quo‑Digitalisierung</li>
-            <li>Erste Automatisierungen – Entwicklung & Tests (fokussierte Implementierung/Integration)</li>
-            <li>Iteration & Rollout (optional) – Feinabstimmung, Skalierungsempfehlung, Pilot‑Deployment</li>
-          </ol>
+      <!-- PHASE 2 -->
+      <div class="row" style="--panelMinH: 240px;">
+        <div class="stub" tabindex="0" aria-label="Phase 2 aufklappen">
+          <div class="head">
+            <div class="ico" aria-hidden="true">
+              <!-- Isometrische Kachel + Schloss: Plattform & Compliance -->
+              <svg viewBox="0 0 24 24">
+                <path d="M3 9 L12 3 L21 9 L12 15 Z"/>
+                <path d="M9 12 L12 14 L15 12"/>
+                <path d="M12 15 L12 21"/>
+                <circle cx="12" cy="18" r="2"/>
+              </svg>
+            </div>
+            <span class="tag">Phase 2</span>
+          </div>
+          <div class="title">Zentrale technische Infrastruktur und Compliance</div>
+          <p class="teaser">Assistenten & Workflows unternehmensweit betreiben – DSGVO‑konform und skalierbar.</p>
         </div>
-      </article>
+        <div class="panel" role="region" aria-label="Details Phase 2">
+          <div class="panel-inner">
+            <div class="chips">
+              <span class="chip">Zentrale Plattform</span>
+              <span class="chip">Rollen & Rechte</span>
+              <span class="chip">Audit Trails</span>
+            </div>
+            <p class="bul">Von Prototypen zum produktiven Einsatz – ohne Lizenzwildwuchs.</p>
+            <p class="bul"><strong>Compliance by Design:</strong> DSGVO, Governance, Nachvollziehbarkeit.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- PHASE 3 -->
+      <div class="row" style="--panelMinH: 360px;"> <!-- größer, damit kompletter Text sichtbar ist -->
+        <div class="stub" tabindex="0" aria-label="Phase 3 aufklappen">
+          <div class="head">
+            <div class="ico" aria-hidden="true">
+              <!-- Modulare Polygone/Zahnrad-Fragmente: Optimierung & Aufbau -->
+              <svg viewBox="0 0 24 24">
+                <path d="M7 12 l3 -2 l3 2 l-3 2 Z"/>
+                <path d="M14 8 l2 -1 l2 1 l-2 1 Z"/>
+                <path d="M15 14 l2 -1 l2 1 l-2 1 Z"/>
+              </svg>
+            </div>
+            <span class="tag">Phase 3</span>
+          </div>
+          <div class="title">Use‑Case‑Identifikation & Prozessoptimierung (Quick Wins)</div>
+          <p class="teaser">1–2 Prototypen in kurzer Zeit – sichtbare Wirkung und klare KPI‑Basis.</p>
+        </div>
+        <div class="panel" role="region" aria-label="Details Phase 3">
+          <div class="panel-inner">
+            <div class="chips">
+              <span class="chip">PoC 10–15 Std.</span>
+              <span class="chip">Integration</span>
+              <span class="chip">KPI‑Tracking</span>
+            </div>
+            <p class="bul"><strong>Vorgehen:</strong> Konzeption → Implementierung → Testing → Integration (Workflows/Skripte) für 1–2 Prototypen.</p>
+            <p class="bul"><strong>Ziel:</strong> Belastbarer Proof‑of‑Concept mit schneller Wertschöpfung.</p>
+            <p class="bul"><strong>7‑Schritte Framework:</strong></p>
+            <p class="bul">1) Aufgaben identifizieren • 2) Aufgaben zerlegen (Input → Schritte → Output) • 3) GenAI‑Fähigkeiten zuordnen (Analysieren/Generieren) • 4) KI‑Aufgaben formulieren • 5) AI‑First Prozess denken • 6) Erste Automatisierungen (mit ggf. 20–30 Std. bei erweitertem Umfang) • 7) Iteration & Rollout (optional).</p>
+          </div>
+        </div>
+      </div>
     </section>
   </div>
 
   <script>
-    /*
-      Interaktionslogik:
-      - Zielvorgabe war Mouse-Over; zusätzlich Click/Enter als Fallback (Touch/Keyboard).
-      - Bei Click toggeln wir die Klasse .active, sodass Details geöffnet bleiben.
-    */
-    (function(){
-      const cards = document.querySelectorAll('.card');
-      cards.forEach(card => {
-        // Toggle per Click
-        card.addEventListener('click', (e) => {
-          // Verhindert, dass Link/Buttons inside stören – hier keine vorhanden, nur Sicherheitsnetz
-          if(e.target.closest('a,button')) return;
-          card.classList.toggle('active');
-        });
-        // Toggle per Enter/Space (Accessibility)
-        card.addEventListener('keydown', (e) => {
-          if(e.key === 'Enter' || e.key === ' '){
-            e.preventDefault();
-            card.classList.toggle('active');
-          }
-        });
-      });
-    })();
+    // Interaktion per Maus & Tastatur: Slide-out rechts öffnen
+    document.querySelectorAll('.row').forEach(row => {
+      const stub = row.querySelector('.stub');
+      const open = ()=> row.classList.add('open');
+      const close = ()=> row.classList.remove('open');
+      row.addEventListener('mouseenter', open);
+      row.addEventListener('mouseleave', close);
+      stub.addEventListener('focusin', open);
+      row.addEventListener('focusout', (e)=>{ if(!row.contains(e.relatedTarget)) close(); });
+    });
   </script>
 </body>
-</html
+</html>
